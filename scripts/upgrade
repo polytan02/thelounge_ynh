@@ -16,7 +16,10 @@ is_public=$(ynh_app_setting_get $app is_public)
 CHECK_PATH      # Vérifie et corrige la syntaxe du path.
 
 # Create user named $app if doesn't exist already
-ADD_SYS_USER
+if ! ynh_system_user_exists "$app"      # Test l'existence de l'utilisateur
+then
+        sudo useradd -d /var/www/$app --system --user-group $app --shell /bin/bash || (echo "Unable to create $app system account" >&2 && false)
+fi
 
 # Modify the random username
 user=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')

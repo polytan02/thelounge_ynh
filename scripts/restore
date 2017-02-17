@@ -34,7 +34,10 @@ sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
 sudo cp -a "$backup_dir/sources/." $final_path
 
 # Create user named $app if doesn't exist already
-ADD_SYS_USER
+if ! ynh_system_user_exists "$app"      # Test l'existence de l'utilisateur
+then
+        sudo useradd -d /var/www/$app --system --user-group $app --shell /bin/bash || (echo "Unable to create $app system account" >&2 && false)
+fi
 
 # Set permissions
 sudo chown -hR $app: $final_path
