@@ -16,22 +16,20 @@ if [ -d $final_path ]; then
     exit 1
 fi
 
-# The parameter $1 is the uncompressed restore directory location
-backup_dir=$1/apps/$app
-
 # Restore Nginx
 conf=/etc/nginx/conf.d/$domain.d/$app.conf
 if [ -f $conf ]; then
     echo "There is already a nginx conf file at this path: $conf " >&2
     exit 1
 fi
-sudo cp -a $backup_dir/nginx.conf $conf
+sudo cp -a ./nginx.conf $conf
 
 # Restore YunoHost parameters
-sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
+sudo cp -a ./yunohost/. /etc/yunohost/apps/$app/
 
 # Restore sources & data
-sudo cp -a "$backup_dir/sources/." $final_path
+sudo mkdir -p $final_path
+sudo cp -a ./sources/* $final_path/
 
 # Create user named $app if doesn't exist already
 if ! ynh_system_user_exists "$app"      # Test l'existence de l'utilisateur
@@ -48,7 +46,7 @@ sudo apt-get install nodejs npm -y
 sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Copy systemd service
-sudo cp -a $backup_dir/systemd.service /etc/systemd/system/$app.service
+sudo cp -a systemd.service /etc/systemd/system/$app.service
 
 # Add YunoHost service
 sudo yunohost service add $app --log "/var/log/$app/thelounge.log" \
