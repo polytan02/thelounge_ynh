@@ -9,6 +9,14 @@
         "name": "beudbeud",
         "email": "beudbeud@beudibox.fr"
     },
+    "license": "MIT",
+    "services": [
+        "nginx",
+        "php5-fpm",
+    ],
+    "requirements": {
+        "yunohost": ">= 2.5.0"
+    },
     "multi_instance": "false",
     "arguments": {
         "install" : [
