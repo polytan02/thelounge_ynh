@@ -35,9 +35,8 @@ ynh_app_setting_set $app domain $domain
 ynh_app_setting_set $app path $path
 ynh_app_setting_set $app is_public $is_public
 
-# Create user
-sudo useradd -d $final_path $app\
-  || echo "User $app already created"
+# Create system user named $app if doesn't exist already
+ADD_SYS_USER
 
 # Modify the random username
 user=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')

@@ -33,9 +33,8 @@ sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
 # Restore sources & data
 sudo cp -a "$backup_dir/sources/." $final_path
 
-# Create user
-sudo useradd -d $final_path $app\
-  || echo "User $app already created"
+# Create user named $app if doesn't exist already
+ADD_SYS_USER
 
 # Set permissions
 sudo chown -hR $app: $final_path

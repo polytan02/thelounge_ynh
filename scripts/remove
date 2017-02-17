@@ -22,7 +22,8 @@ SECURE_REMOVE '/var/www/$app'   # Suppression du dossier de l'application
 REMOVE_NGINX_CONF       # Suppression de la configuration nginx
 
 
-sudo userdel $app
+# Remove system user named $app if exists
+REMOVE_SYS_USER
 
 # Reload services after cleaning
 sudo service nginx reload
