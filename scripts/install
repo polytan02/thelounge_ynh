@@ -50,7 +50,7 @@ sed -i "s@PATHTOCHANGE@$path/@g" ../conf/config.js
 #
 # Is this still required ??????
 #
-sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/lounge.js
+#sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/lounge.js
 
 # Get the sources
 lounge_file=`sudo cat ../sources/source_file`;
