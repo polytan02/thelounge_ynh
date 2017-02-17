@@ -1,0 +1,69 @@
+#!/bin/bash
+
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
+
+# Source app helpers
+source /usr/share/yunohost/helpers
+
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+final_path=$(ynh_app_setting_get $app final_path)
+is_public=$(ynh_app_setting_get $app is_public)
+
+if [ -d $final_path ]; then
+    echo "There is already a directory: $final_path " >&2
+    exit 1
+fi
+
+# The parameter $1 is the uncompressed restore directory location
+backup_dir=$1/apps/$app
+
+# Restore Nginx
+conf=/etc/nginx/conf.d/$domain.d/$app.conf
+if [ -f $conf ]; then
+    echo "There is already a nginx conf file at this path: $conf " >&2
+    exit 1
+fi
+sudo cp -a $backup_dir/nginx.conf $conf
+
+# Restore YunoHost parameters
+sudo cp -a $backup_dir/yunohost/. /etc/yunohost/apps/$app
+
+# Restore sources & data
+sudo cp -a "$backup_dir/sources/." $final_path
+
+# Create user
+sudo useradd -d $final_path $app\
+  || echo "User $app already created"
+
+# Set permissions
+sudo chown -hR $app: $final_path
+
+# Install dependencies
+sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
+
+# Copy systemd service
+sudo cp -a $backup_dir/systemd.service /etc/systemd/system/$app.service
+
+# Add YunoHost service
+sudo yunohost service add $app -l /var/log/syslog \
+  || echo "Service $app already exist"
+
+# Make app public if necessary
+is_public=$(ynh_app_setting_get $app is_public)
+if [ "$is_public" = "Yes" ];
+then
+        ynh_app_setting_set $app skipped_uris "/"
+else
+        ynh_app_setting_set $app protected_uris "/"
+fi
+
+
+# Reload Nginx, thelounge and regenerate SSOwat conf
+sudo service nginx reload
+sudo systemctl enable $app
+sudo systemctl restart $app || sudo systemctl start $app
+
+sudo yunohost app ssowatconf
+
