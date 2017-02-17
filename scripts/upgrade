@@ -1,55 +1,76 @@
 #!/bin/bash
 
-set -e
+source .fonctions       # Charge les fonctions génériques habituellement utilisées dans le script
 
-# Retrieve arguments
-domain=$(sudo yunohost app setting thelounge domain)
-path=$(sudo yunohost app setting thelounge path)
-is_public=$(sudo yunohost app setting thelounge is_public)
-final_path=/var/www/thelounge
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
 
-# Remove trailing "/" from the path
-path=${path%/}
+# Source app helpers
+source /usr/share/yunohost/helpers
+
+domain=$(ynh_app_setting_get $app domain)
+path=$(ynh_app_setting_get $app path)
+final_path=$(ynh_app_setting_get $app final_path)
+is_public=$(ynh_app_setting_get $app is_public)
+
+CHECK_PATH      # Vérifie et corrige la syntaxe du path.
+
+
+# Create user
+sudo useradd -d $final_path $app\
+  || echo "User $app already created"
+
+# Modify the random username
+user=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
+sed -i "s@USERTOCHANGE@$user@g" ../conf/user.json
+sed -i "s@PATHTOCHANGE@$path/@g" ../conf/config.js
 
 # HACK: Change the socket.io path in the sources
-sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/thelounge.js
+#
+# Is this still required ??????
+#
+sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/lounge.js
 
 # Copy files to the right place
-sudo mkdir -p $final_path/.thelounge/users
-sed -i "s@PATHTOCHANGE@$path/@g" ../conf/config.js
-sudo cp ../conf/config.js $final_path/.thelounge/
+sudo mkdir -p $final_path/.lounge/users
+sudo cp ../conf/config.js $final_path/.lounge/
+sudo cp ../conf/user.json $final_path/.lounge/users/$user.json
 sudo cp -a ../sources/* $final_path/
 
 # Set permissions
-sudo chown -hR thelounge $final_path
+sudo chown -hR $app: $final_path
 
 # Install dependencies
-sudo su -c "cd $final_path && /usr/bin/npm install --production" thelounge
+sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
-if [[ "$path" == "" ]]; then
-  sed -i "s@LOCATIONTOCHANGE@/@g" ../conf/nginx.conf
-else
+#if [[ "$path" == "" ]]; then
+#  sed -i "s@LOCATIONTOCHANGE@/@g" ../conf/nginx.conf
+#else
   sed -i "s@LOCATIONTOCHANGE@$path@g" ../conf/nginx.conf
-fi
-sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/thelounge.conf
+#fi
+sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Copy systemd service
-sudo cp ../conf/systemd.service /etc/systemd/system/thelounge.service
+sed -i "s@NAMETOCHANGE@$$app@g" ../conf/systemd.service
+sudo cp ../conf/systemd.service /etc/systemd/system/$app.service
 
 # Add YunoHost service
-sudo yunohost service add thelounge -l /var/log/syslog \
-  || echo "Service already exist"
+sudo yunohost service add $app -l /var/log/syslog \
+  || echo "Service $app already exist"
 
 # Make app public if necessary
-sudo yunohost app setting thelounge is_public -v "$is_public"
+is_public=$(ynh_app_setting_get $app is_public)
 if [ "$is_public" = "Yes" ];
 then
-    sudo yunohost app setting thelounge unprotected_uris -v "/"
+        ynh_app_setting_set $app skipped_uris "/"
+else
+        ynh_app_setting_set $app protected_uris "/"
 fi
 
 # Reload Nginx, thelounge and regenerate SSOwat conf
 sudo service nginx reload
-sudo systemctl enable thelounge
-sudo systemctl restart thelounge || sudo systemctl start thelounge
+sudo systemctl enable $app
+sudo systemctl restart $app || sudo systemctl start $app
+
 sudo yunohost app ssowatconf
