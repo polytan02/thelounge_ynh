@@ -86,7 +86,7 @@ sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 sudo cp ../conf/nginx.conf /etc/nginx/conf.d/$domain.d/$app.conf
 
 # Copy systemd service
-sed -i "s@NAMETOCHANGE@$$app@g" ../conf/systemd.service
+sed -i "s@NAMETOCHANGE@$app@g" ../conf/systemd.service
 sudo cp ../conf/systemd.service /etc/systemd/system/$app.service
 
 # Add YunoHost service
