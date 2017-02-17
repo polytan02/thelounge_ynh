@@ -90,7 +90,7 @@ sed -i "s@NAMETOCHANGE@$app@g" ../conf/systemd.service
 sudo cp ../conf/systemd.service /etc/systemd/system/$app.service
 
 # Add YunoHost service
-sudo yunohost service add $app -l /var/log/syslog
+sudo yunohost service add $app --log "/var/log/$app/thelounge.log"
 
 # Make app public if necessary
 is_public=$(ynh_app_setting_get $app is_public)

@@ -51,7 +51,7 @@ sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 sudo cp -a $backup_dir/systemd.service /etc/systemd/system/$app.service
 
 # Add YunoHost service
-sudo yunohost service add $app -l /var/log/syslog \
+sudo yunohost service add $app --log "/var/log/$app/thelounge.log" \
   || echo "Service $app already exist"
 
 # Make app public if necessary
