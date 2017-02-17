@@ -1,16 +1,35 @@
 #!/bin/bash
 
-domain=$(sudo yunohost app setting thelounge domain)
 
-sudo systemctl stop thelounge
-sudo systemctl disable thelounge
-sudo yunohost service remove thelounge
+source .fonctions       # Charge les fonctions génériques habituellement utilisées dans le script
 
-sudo rm -rf /var/www/thelounge
-sudo rm -f /etc/nginx/conf.d/$domain.d/thelounge.conf
-sudo rm -f /etc/systemd/system/thelounge.service
+# Récupère les infos de l'application.
+app=$YNH_APP_INSTANCE_NAME
 
-sudo userdel thelounge
+# Source app helpers
+source /usr/share/yunohost/helpers
 
+domain=$(ynh_app_setting_get $app domain)
+
+# Stopping thelounge services
+sudo systemctl stop $app
+sudo systemctl disable $app
+sudo yunohost service remove $app
+sudo rm -f /etc/systemd/system/$app.service
+
+SECURE_REMOVE '/var/www/$app'   # Suppression du dossier de l'application
+
+REMOVE_NGINX_CONF       # Suppression de la configuration nginx
+
+
+sudo userdel $app
+
+# Reload services after cleaning
 sudo service nginx reload
+
+# Régénère la configuration de SSOwat
 sudo yunohost app ssowatconf
+
+echo -e "\e[0m" # Restore normal color
+
+
