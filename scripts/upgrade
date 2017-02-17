@@ -32,11 +32,16 @@ sed -i "s@PATHTOCHANGE@$path/@g" ../conf/config.js
 #
 sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/lounge.js
 
+# Get the sources
+lounge_file=`sudo cat ../sources/source_file`;
+sudo wget -nv -i ../sources/source_url -O ${lounge_file}.zip
+sudo md5sum -c ../sources/source_md5 --status || (echo "Corrupt source" >&2 && false)
+sudo unzip -q ${lounge_file}.zip -d ../sources/
+sudo cp -r ../sources/${lounge_file}/. $final_path
 # Copy files to the right place
 sudo mkdir -p $final_path/.lounge/users
 sudo cp ../conf/config.js $final_path/.lounge/
 sudo cp ../conf/user.json $final_path/.lounge/users/$user.json
-sudo cp -a ../sources/* $final_path/
 
 # Set permissions
 sudo chown -hR $app: $final_path
