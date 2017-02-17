@@ -13,7 +13,7 @@
     "license": "MIT",
     "services": [
         "nginx",
-        "php5-fpm",
+        "php5-fpm"
     ],
     "requirements": {
         "yunohost": ">= 2.5.0"
