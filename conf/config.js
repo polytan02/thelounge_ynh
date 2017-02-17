@@ -27,7 +27,7 @@ module.exports = {
 	// @type     int
 	// @default  9000
 	//
-	port: 9191,
+	port: PORTTOCHANGE,
 
 	//
 	// Set the local IP to bind to for outgoing connections. Leave to undefined

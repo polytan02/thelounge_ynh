@@ -15,6 +15,12 @@ is_public=$(ynh_app_setting_get $app is_public)
 
 CHECK_PATH      # Vérifie et corrige la syntaxe du path.
 
+# Retrieve port and use it
+port=$(ynh_app_setting_get $app port)
+sed -i "s@PORTTOCHANGE@$port@g" ../conf/nginx.conf
+sed -i "s@PORTTOCHANGE@$port@g" ../conf/config.js
+
+
 # Create user named $app if doesn't exist already
 if ! ynh_system_user_exists "$app"      # Test l'existence de l'utilisateur
 then

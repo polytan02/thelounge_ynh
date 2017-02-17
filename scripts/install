@@ -30,6 +30,12 @@ CHECK_FINALPATH # Vérifie que le dossier de destination n'est pas déjà utilis
 sudo mkdir "$final_path"
 ynh_app_setting_set $app final_path $final_path
 
+# Check port availibility and creates $port
+FIND_PORT 9191
+sed -i "s@PORTTOCHANGE@$port@g" ../conf/nginx.conf
+sed -i "s@PORTTOCHANGE@$port@g" ../conf/config.js
+ynh_app_setting_set $app port $port
+
 # Enregistre les infos dans la config YunoHost
 ynh_app_setting_set $app domain $domain
 ynh_app_setting_set $app path $path
