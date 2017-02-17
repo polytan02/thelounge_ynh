@@ -43,7 +43,7 @@ sudo apt-get install nodejs -y
 
 # Create user
 sudo useradd -d $final_path $app\
-  || echo "User already created"
+  || echo "User $app already created"
 
 # Modify the random username
 user=$(dd if=/dev/urandom bs=1 count=200 2> /dev/null | tr -c -d 'A-Za-z0-9' | sed -n 's/\(.\{24\}\).*/\1/p')
@@ -51,6 +51,9 @@ sed -i "s@USERTOCHANGE@$user@g" ../conf/user.json
 sed -i "s@PATHTOCHANGE@$path/@g" ../conf/config.js
 
 # HACK: Change the socket.io path in the sources
+#
+# Is this still required ??????
+#
 sed -i "s@PATHTOCHANGE@$path@g" ../sources/client/js/lounge.js
 
 # Copy files to the right place
@@ -63,7 +66,7 @@ sudo cp -a ../sources/* $final_path/
 sudo chown -hR $app: $final_path
 
 # Install dependencies
-sudo su - $app -c "cd $final_path && /usr/bin/npm install"
+sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Modify Nginx configuration file and copy it to Nginx conf directory
 #if [[ "$path" == "" ]]; then
