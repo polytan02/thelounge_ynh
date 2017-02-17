@@ -15,7 +15,6 @@ is_public=$(ynh_app_setting_get $app is_public)
 
 CHECK_PATH      # Vérifie et corrige la syntaxe du path.
 
-
 # Create user
 sudo useradd -d $final_path $app\
   || echo "User $app already created"
@@ -41,6 +40,8 @@ sudo cp -a ../sources/* $final_path/
 sudo chown -hR $app: $final_path
 
 # Install dependencies
+sudo apt-get update
+sudo apt-get install nodejs npm -y
 sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Modify Nginx configuration file and copy it to Nginx conf directory

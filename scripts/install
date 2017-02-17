@@ -35,10 +35,6 @@ ynh_app_setting_set $app domain $domain
 ynh_app_setting_set $app path $path
 ynh_app_setting_set $app is_public $is_public
 
-# Install dependencies
-sudo apt-get update
-sudo apt-get install nodejs -y
-
 # Create user
 sudo useradd -d $final_path $app\
   || echo "User $app already created"
@@ -64,6 +60,8 @@ sudo cp -a ../sources/* $final_path/
 sudo chown -hR $app: $final_path
 
 # Install dependencies
+sudo apt-get update
+sudo apt-get install nodejs npm -y
 sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Modify Nginx configuration file and copy it to Nginx conf directory

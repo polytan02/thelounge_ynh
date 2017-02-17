@@ -40,7 +40,9 @@ sudo useradd -d $final_path $app\
 # Set permissions
 sudo chown -hR $app: $final_path
 
-# Install dependencies
+# Install depedencies
+sudo apt-get update
+sudo apt-get install nodejs npm -y
 sudo su - $app -c "cd $final_path && /usr/bin/npm install --production"
 
 # Copy systemd service
